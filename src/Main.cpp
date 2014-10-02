@@ -23,7 +23,6 @@
 
 #include "AudioFileReader.h"
 #include "Config.h"
-#include "GdImageRenderer.h"
 #include "MonoConverter.h"
 #include "Mp3AudioFileReader.h"
 #include "Options.h"
@@ -153,153 +152,6 @@ static bool convertWaveformData(
 
 //------------------------------------------------------------------------------
 
-static bool renderWaveformImage(
-    const boost::filesystem::path& input_filename,
-    const boost::filesystem::path& output_filename,
-    const Options& options)
-{
-    std::unique_ptr<ScaleFactor> scale_factor;
-
-    if (options.hasSamplesPerPixel() && options.hasEndTime()) {
-        error_stream << "Specify either end time or zoom, but not both\n";
-        return false;
-    }
-    else if (options.hasEndTime()) {
-        if (options.getEndTime() < options.getStartTime()) {
-            error_stream << "Invalid end time, must be greater than "
-                         << options.getStartTime() << '\n';
-            return false;
-        }
-
-        if (options.getImageWidth() < 1) {
-            error_stream << "Invalid image width: minimum 1\n";
-            return false;
-        }
-
-        scale_factor.reset(new DurationScaleFactor(
-            options.getStartTime(),
-            options.getEndTime(),
-            options.getImageWidth()
-        ));
-    }
-    else {
-        scale_factor.reset(new FixedScaleFactor(options.getSamplesPerPixel()));
-    }
-
-    int output_samples_per_pixel = 0;
-
-    WaveformBuffer input_buffer;
-
-    const boost::filesystem::path input_file_ext = input_filename.extension();
-
-    if (input_file_ext == ".dat") {
-        if (!input_buffer.load(input_filename.c_str())) {
-            return false;
-        }
-
-        output_samples_per_pixel = scale_factor->getSamplesPerPixel(
-            input_buffer.getSampleRate()
-        );
-    }
-    else {
-        std::unique_ptr<AudioFileReader> audio_file_reader(
-            createAudioFileReader(input_file_ext)
-        );
-
-        if (audio_file_reader == nullptr) {
-            error_stream << "Unknown file type: " << input_filename << '\n';
-            return false;
-        }
-
-        if (!audio_file_reader->open(input_filename.c_str())) {
-            return false;
-        }
-
-        WaveformGenerator processor(input_buffer, *scale_factor);
-
-        if (!audio_file_reader->run(processor)) {
-            return false;
-        }
-
-        output_samples_per_pixel = input_buffer.getSamplesPerPixel();
-    }
-
-    WaveformBuffer output_buffer;
-    WaveformBuffer* render_buffer = nullptr;
-
-    const int input_samples_per_pixel = input_buffer.getSamplesPerPixel();
-
-    if (output_samples_per_pixel == input_samples_per_pixel) {
-        // No need to rescale
-        render_buffer = &input_buffer;
-    }
-    else if (output_samples_per_pixel > input_samples_per_pixel) {
-        WaveformRescaler rescaler;
-
-        if (!rescaler.rescale(
-            input_buffer,
-            output_buffer,
-            output_samples_per_pixel))
-        {
-            return false;
-        }
-
-        render_buffer = &output_buffer;
-    }
-    else {
-        error_stream << "Invalid zoom, minimum: " << input_samples_per_pixel << '\n';
-        return false;
-    }
-
-    const std::string& color_scheme = options.getColorScheme();
-
-    WaveformColors colors;
-
-    if (color_scheme == "audacity") {
-        colors = audacityWaveformColors;
-    }
-    else if (color_scheme == "audition") {
-        colors = auditionWaveformColors;
-    }
-    else {
-        error_stream << "Unknown color scheme: " << color_scheme << '\n';
-        return false;
-    }
-
-    GdImageRenderer renderer;
-
-    if (options.hasBorderColor()) {
-        colors.border_color = options.getBorderColor();
-    }
-
-    if (options.hasBackgroundColor()) {
-        colors.background_color = options.getBackgroundColor();
-    }
-
-    if (options.hasWaveformColor()) {
-        colors.waveform_color = options.getWaveformColor();
-    }
-
-    if (options.hasAxisLabelColor()) {
-        colors.axis_label_color = options.getAxisLabelColor();
-    }
-
-    if (!renderer.create(
-        *render_buffer,
-        options.getStartTime(),
-        options.getImageWidth(),
-        options.getImageHeight(),
-        colors,
-        options.getRenderAxisLabels()))
-    {
-        return false;
-    }
-
-    return renderer.saveAsPng(output_filename.c_str());
-}
-
-//------------------------------------------------------------------------------
-
 int main(int argc, const char* const* argv)
 {
     Options options;
@@ -344,16 +196,6 @@ int main(int argc, const char* const* argv)
         success = convertWaveformData(
             input_filename,
             output_filename
-        );
-    }
-    else if ((input_file_ext == ".dat" ||
-              input_file_ext == ".mp3" ||
-              input_file_ext == ".wav" ||
-              input_file_ext == ".flac") && output_file_ext == ".png") {
-        success = renderWaveformImage(
-            input_filename,
-            output_filename,
-            options
         );
     }
     else {

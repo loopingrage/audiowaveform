@@ -24,7 +24,7 @@
 #include "Options.h"
 #include "Config.h"
 #include "Streams.h"
-#include "Rgba.h"
+#include "Rgb.h"
 
 #include <iostream>
 
@@ -109,20 +109,20 @@ bool Options::parseCommandLine(int argc, const char* const* argv)
         "color scheme (audition or audacity)"
     )(
         "border-color",
-        po::value<RGBA>(&border_color_),
-        "border color (rrggbb[aa])"
+        po::value<RGB>(&border_color_),
+        "border color (rrggbb)"
     )(
         "background-color",
-        po::value<RGBA>(&background_color_),
-        "background color (rrggbb[aa])"
+        po::value<RGB>(&background_color_),
+        "background color (rrggbb)"
     )(
         "waveform-color",
-        po::value<RGBA>(&waveform_color_),
-        "wave color (rrggbb[aa])"
+        po::value<RGB>(&waveform_color_),
+        "wave color (rrggbb)"
     )(
         "axis-label-color",
-        po::value<RGBA>(&axis_label_color_),
-        "axis label color (rrggbb[aa])"
+        po::value<RGB>(&axis_label_color_),
+        "axis label color (rrggbb)"
     )(
         "no-axis-labels",
         "render waveform image without axis labels"

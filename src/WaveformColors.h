@@ -26,7 +26,7 @@
 
 //------------------------------------------------------------------------------
 
-#include "Rgba.h"
+#include "Rgb.h"
 
 //------------------------------------------------------------------------------
 
@@ -35,19 +35,17 @@ class WaveformColors
     public:
         WaveformColors();
         WaveformColors(
-            const RGBA& border_color,
-            const RGBA& background_color,
-            const RGBA& wave_color,
-            const RGBA& axis_label_color
+            const RGB& border_color,
+            const RGB& background_color,
+            const RGB& wave_color,
+            const RGB& axis_label_color
         );
 
-        bool hasAlpha() const;
-
     public:
-        RGBA border_color;
-        RGBA background_color;
-        RGBA waveform_color;
-        RGBA axis_label_color;
+        RGB border_color;
+        RGB background_color;
+        RGB waveform_color;
+        RGB axis_label_color;
 };
 
 //------------------------------------------------------------------------------

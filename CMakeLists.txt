@@ -67,7 +67,6 @@ message(STATUS "Building version ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PAT
 #
 #-------------------------------------------------------------------------------
 
-find_package(LibGD REQUIRED)
 find_package(LibSndFile REQUIRED)
 find_package(LibMad REQUIRED)
 find_package(Boost 1.46.0 COMPONENTS program_options filesystem regex system REQUIRED)
@@ -75,7 +74,6 @@ find_package(Boost 1.46.0 COMPONENTS program_options filesystem regex system REQ
 message(STATUS "Boost_INCLUDE_DIRS='${Boost_INCLUDE_DIRS}'")
 message(STATUS "Boost_LIBRARIES='${Boost_LIBRARIES}'")
 message(STATUS "LIBSNDFILE_LIBRARY=${LIBSNDFILE_LIBRARY}")
-message(STATUS "LIBGD_LIBRARY=${LIBGD_LIBRARY}")
 message(STATUS "LIBMAD_LIBRARY=${LIBMAD_LIBRARY}")
 
 #-------------------------------------------------------------------------------
@@ -108,7 +106,7 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
         set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${OF_SYSTEM_ARCH}")
 
         set(PACKAGE_BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libmad0 (>=0.15.1), libsndfile1 (>= 1.0.25), libgd2-xpm (>= 2.0.35), libboost-program-options${PACKAGE_BOOST_VERSION}, libboost-filesystem${PACKAGE_BOOST_VERSION}, libboost-regex${PACKAGE_BOOST_VERSION}")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libmad0 (>=0.15.1), libsndfile1 (>= 1.0.25), libboost-program-options${PACKAGE_BOOST_VERSION}, libboost-filesystem${PACKAGE_BOOST_VERSION}, libboost-regex${PACKAGE_BOOST_VERSION}")
 
         # http://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html#s-pkgname
         # The Debian binary package file names conform to the following convention:
@@ -190,12 +188,11 @@ include_directories("${PROJECT_BINARY_DIR}")
 set(MODULES
     src/AudioFileReader.cpp
     src/AudioProcessor.cpp
-    src/GdImageRenderer.cpp
     src/MathUtil.cpp
     src/MonoConverter.cpp
     src/Mp3AudioFileReader.cpp
     src/Options.cpp
-    src/Rgba.cpp
+    src/Rgb.cpp
     src/SndFileAudioFileReader.cpp
     src/TimeUtil.cpp
     src/WaveformBuffer.cpp
@@ -220,7 +217,7 @@ add_executable(audiowaveform ${SRCS})
 #-------------------------------------------------------------------------------
 
 # Specify libraries to link against.
-set(LIBS ${LIBSNDFILE_LIBRARY} ${LIBGD_LIBRARY} ${LIBMAD_LIBRARY} ${Boost_LIBRARIES})
+set(LIBS ${LIBSNDFILE_LIBRARY} ${LIBMAD_LIBRARY} ${Boost_LIBRARIES})
 target_link_libraries(audiowaveform ${LIBS})
 
 #-------------------------------------------------------------------------------
@@ -241,7 +238,6 @@ if(ENABLE_TESTS)
 
     set(TESTS
         test/AudioFileReaderTest.cpp
-        test/GdImageRendererTest.cpp
         test/MathUtilTest.cpp
         test/Mp3AudioFileReaderTest.cpp
         test/OptionsTest.cpp
